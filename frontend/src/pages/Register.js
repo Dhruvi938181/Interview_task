@@ -7,16 +7,54 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    if (!name || !email || !password) {
+      return "All fields are required";
+    }
+
+    if (name.length < 3) {
+      return "Name must be at least 3 characters";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Invalid email format";
+    }
+
+    if (password.length < 6) {
+      return "Password must be at least 6 characters";
+    }
+
+    return null;
+  };
 
   const register = async (e) => {
     e.preventDefault();
 
-    await axios.post("http://localhost:5000/api/auth/register", { name, email, password });
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
-    alert("Registration successful");
+    setError("");
 
-    navigate("/login");
+    try {
+      await axios.post("http://localhost:5000/api/auth/register", {
+        name,
+        email,
+        password,
+      });
+
+      alert("Registration successful");
+      navigate("/login");
+    } catch (err) {
+      setError(err.response?.data?.message || "Something went wrong");
+    }
   };
 
   return (
@@ -24,14 +62,36 @@ function Register() {
       <div className="card p-4 shadow" style={{ width: "400px" }}>
         <h3 className="text-center mb-3">Create Account</h3>
 
+        {error && (
+          <div className="alert alert-danger py-2">{error}</div>
+        )}
+
         <form onSubmit={register}>
-          <input className="form-control mb-3" placeholder="Name" onChange={(e) => setName(e.target.value)} />
+          <input
+            className="form-control mb-3"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
-          <input className="form-control mb-3" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+          <input
+            className="form-control mb-3"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-          <input className="form-control mb-3" type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+          <input
+            className="form-control mb-3"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          <button className="btn btn-primary w-100">Register</button>
+          <button className="btn btn-primary w-100">
+            Register
+          </button>
         </form>
 
         <p className="text-center mt-3">
