@@ -1,20 +1,12 @@
-const express = require("express")
-const cors = require("cors")
+const express = require("express");
+const app = express();
 
-const connectDB = require("./config/db")
-
-const authRoutes = require("./routes/authRoutes")
-const taskRoutes = require("./routes/taskRoutes")
-
-const app = express()
-app.use(cors())
-app.use(express.json())
 app.get("/", (req, res) => {
-  res.send("Backend is running");
+  res.send("Backend running");
 });
-app.use("/api/auth",authRoutes)
-app.use("/api/tasks",taskRoutes)
 
-app.listen(5000,()=>{
-console.log("Server running on port 5000")
-})
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API working" });
+});
+
+module.exports = app;
