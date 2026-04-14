@@ -5,17 +5,51 @@ import { Link, useNavigate } from "react-router-dom";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    if (!email || !password) {
+      return "All fields are required";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Invalid email format";
+    }
+
+    if (password.length < 6) {
+      return "Password must be at least 6 characters";
+    }
+
+    return null;
+  };
 
   const login = async (e) => {
     e.preventDefault();
 
-    const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
-    localStorage.setItem("token", res.data.token);
+    setError("");
 
-    navigate("/dashboard");
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        { email, password }
+      );
+
+      localStorage.setItem("token", res.data.token);
+
+      navigate("/dashboard");
+
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
+    }
   };
 
   return (
@@ -23,12 +57,31 @@ function Login() {
       <div className="card p-4 shadow" style={{ width: "400px" }}>
         <h3 className="text-center mb-3">Login</h3>
 
+        {error && (
+          <div className="alert alert-danger py-2">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={login}>
-          <input className="form-control mb-3" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+          <input
+            className="form-control mb-3"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-          <input className="form-control mb-3" type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+          <input
+            className="form-control mb-3"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          <button className="btn btn-primary w-100">Login</button>
+          <button className="btn btn-primary w-100">
+            Login
+          </button>
         </form>
 
         <p className="text-center mt-3">
